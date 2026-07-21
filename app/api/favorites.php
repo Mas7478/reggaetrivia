@@ -6,6 +6,7 @@ $method = $_SERVER["REQUEST_METHOD"];
 
 switch ($method) {
 
+    // ================= GET =================
     case "GET":
 
         $player_id = isset($_GET["player_id"])
@@ -29,6 +30,10 @@ switch ($method) {
             ORDER BY created_at DESC
         ");
 
+        if ($query === false) {
+            response(false, "Database error: " . mysqli_error($conn));
+        }
+
         $data = [];
 
         while ($row = mysqli_fetch_assoc($query)) {
@@ -39,6 +44,7 @@ switch ($method) {
 
         break;
 
+    // ================= POST =================
     case "POST":
 
         $input = json_decode(file_get_contents("php://input"), true);
@@ -62,19 +68,24 @@ switch ($method) {
             response(false, "Data belum lengkap.");
         }
 
-        // Cek duplikat
+        // Cek apakah lagu sudah ada
         $cek = mysqli_query(
             $conn,
             "SELECT id
              FROM favorite_songs
-             WHERE player_id=$player_id
-             AND youtube_id='$youtube_id'"
+             WHERE player_id = $player_id
+             AND youtube_id = '$youtube_id'"
         );
+
+        if ($cek === false) {
+            response(false, "Database error: " . mysqli_error($conn));
+        }
 
         if (mysqli_num_rows($cek) > 0) {
             response(false, "Lagu sudah ada di favorit.");
         }
 
+        // Simpan lagu
         $insert = mysqli_query(
             $conn,
             "INSERT INTO favorite_songs
@@ -95,16 +106,17 @@ switch ($method) {
             )"
         );
 
-        if ($insert) {
-            response(true, "Lagu berhasil disimpan.", [
-                "id" => mysqli_insert_id($conn)
-            ]);
-        } else {
-            response(false, mysqli_error($conn));
+        if ($insert === false) {
+            response(false, "Database error: " . mysqli_error($conn));
         }
+
+        response(true, "Lagu berhasil disimpan.", [
+            "id" => mysqli_insert_id($conn)
+        ]);
 
         break;
 
+    // ================= PUT =================
     case "PUT":
 
         $input = json_decode(file_get_contents("php://input"), true);
@@ -124,18 +136,21 @@ switch ($method) {
         $update = mysqli_query(
             $conn,
             "UPDATE favorite_songs
-             SET judul='$judul', artis='$artis'
-             WHERE id=$id"
+             SET
+                judul = '$judul',
+                artis = '$artis'
+             WHERE id = $id"
         );
 
-        if ($update) {
-            response(true, "Lagu favorit berhasil diperbarui.");
-        } else {
-            response(false, mysqli_error($conn));
+        if ($update === false) {
+            response(false, "Database error: " . mysqli_error($conn));
         }
+
+        response(true, "Lagu favorit berhasil diperbarui.");
 
         break;
 
+    // ================= DELETE =================
     case "DELETE":
 
         $id = isset($_GET["id"])
@@ -149,17 +164,18 @@ switch ($method) {
         $delete = mysqli_query(
             $conn,
             "DELETE FROM favorite_songs
-             WHERE id=$id"
+             WHERE id = $id"
         );
 
-        if ($delete) {
-            response(true, "Lagu berhasil dihapus.");
-        } else {
-            response(false, mysqli_error($conn));
+        if ($delete === false) {
+            response(false, "Database error: " . mysqli_error($conn));
         }
+
+        response(true, "Lagu berhasil dihapus.");
 
         break;
 
+    // ================= DEFAULT =================
     default:
 
         response(false, "Method tidak didukung.");
