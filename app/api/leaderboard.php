@@ -58,23 +58,58 @@ switch ($method) {
             response(false, "Player tidak ditemukan.");
         }
 
-        $insert = mysqli_query(
-            $conn,
-            "INSERT INTO leaderboard
-            (
-                player_id,
-                skor,
-                total_soal,
-                benar
-            )
-            VALUES
-            (
-                $player_id,
-                $skor,
-                $total,
-                $benar
-            )"
-        );
+        // Cek apakah player sudah ada di leaderboard
+$cek = mysqli_query(
+    $conn,
+    "SELECT id
+    FROM leaderboard
+    WHERE player_id=$player_id
+    LIMIT 1"
+);
+
+if (mysqli_num_rows($cek) > 0) {
+
+$update = mysqli_query(
+    $conn,
+    "UPDATE leaderboard
+    SET
+        skor=$skor,
+        total_soal=$total,
+        benar=$benar,
+        waktu_main=NOW()
+    WHERE player_id=$player_id"
+);
+
+if (!$update) {
+    response(false, mysqli_error($conn));
+}
+
+} else {
+
+    $insert = mysqli_query(
+        $conn,
+        "INSERT INTO leaderboard
+        (
+            player_id,
+            skor,
+            total_soal,
+            benar
+        )
+        VALUES
+        (
+            $player_id,
+            $skor,
+            $total,
+            $benar
+        )"
+    );
+
+    if (!$insert) {
+        response(false, mysqli_error($conn));
+    }
+}
+    
+    response(true, "Leaderboard berhasil diperbarui.");
 
         if (!$insert) {
             response(false, mysqli_error($conn));
