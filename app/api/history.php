@@ -6,6 +6,7 @@ $method = $_SERVER["REQUEST_METHOD"];
 
 switch ($method) {
 
+
     case "GET":
 
         $player_id = isset($_GET["player_id"])
@@ -16,8 +17,9 @@ switch ($method) {
             response(false, "Player tidak valid.");
         }
 
-        $query = mysqli_query($conn, "
-            SELECT
+        $query = mysqli_query(
+            $conn,
+            "SELECT
                 id,
                 youtube_id,
                 judul,
@@ -25,13 +27,13 @@ switch ($method) {
                 thumbnail,
                 shown_at
             FROM song_history
-            WHERE player_id = $player_id
+            WHERE player_id=$player_id
             ORDER BY shown_at DESC
-            LIMIT 100
-        ");
+            LIMIT 100"
+        );
 
-        if ($query === false) {
-            response(false, "Database error: " . mysqli_error($conn));
+        if (!$query) {
+            response(false, mysqli_error($conn));
         }
 
         $data = [];
@@ -40,9 +42,10 @@ switch ($method) {
             $data[] = $row;
         }
 
-        response(true, "Histori soal berhasil diambil.", $data);
+        response(true, "History berhasil diambil.", $data);
 
         break;
+
 
     case "POST":
 
@@ -53,10 +56,26 @@ switch ($method) {
         }
 
         $player_id = intval($input["player_id"] ?? 0);
-        $youtube_id = mysqli_real_escape_string($conn, trim($input["youtube_id"] ?? ""));
-        $judul = mysqli_real_escape_string($conn, trim($input["judul"] ?? ""));
-        $artis = mysqli_real_escape_string($conn, trim($input["artis"] ?? ""));
-        $thumbnail = mysqli_real_escape_string($conn, trim($input["thumbnail"] ?? ""));
+
+        $youtube_id = mysqli_real_escape_string(
+            $conn,
+            trim($input["youtube_id"] ?? "")
+        );
+
+        $judul = mysqli_real_escape_string(
+            $conn,
+            trim($input["judul"] ?? "")
+        );
+
+        $artis = mysqli_real_escape_string(
+            $conn,
+            trim($input["artis"] ?? "")
+        );
+
+        $thumbnail = mysqli_real_escape_string(
+            $conn,
+            trim($input["thumbnail"] ?? "")
+        );
 
         if (
             $player_id <= 0 ||
@@ -68,68 +87,95 @@ switch ($method) {
         }
 
         $cek = mysqli_query(
-    $conn,
-    "SELECT id
-    FROM song_history
-    WHERE
-        player_id=$player_id
-    AND
-        youtube_id='$youtube_id'
-    LIMIT 1"
-);
+            $conn,
+            "SELECT id
+            FROM song_history
+            WHERE
+                player_id=$player_id
+            AND
+                youtube_id='$youtube_id'
+            LIMIT 1"
+        );
 
-if (mysqli_num_rows($cek) > 0) {
+        if (!$cek) {
+            response(false, mysqli_error($conn));
+        }
 
-    $row = mysqli_fetch_assoc($cek);
+        mysqli_begin_transaction($conn);
 
-    $historyId = $row["id"];
+        try {
 
-    $update = mysqli_query(
-        $conn,
-        "UPDATE song_history
-        SET
-            shown_at=NOW()
-        WHERE id=$historyId"
-    );
 
-    if (!$update) {
-        response(false, mysqli_error($conn));
-    }
+            if (mysqli_num_rows($cek) > 0) {
 
-    response(true, "History diperbarui.");
+                $row = mysqli_fetch_assoc($cek);
 
-} else {
+                $historyId = intval($row["id"]);
 
-    $insert = mysqli_query(
-        $conn,
-        "INSERT INTO song_history
-        (
-            player_id,
-            youtube_id,
-            judul,
-            artis,
-            thumbnail
-        )
-        VALUES
-        (
-            $player_id,
-            '$youtube_id',
-            '$judul',
-            '$artis',
-            '$thumbnail'
-        )"
-    );
+                $update = mysqli_query(
+                    $conn,
+                    "UPDATE song_history
+                    SET
+                        judul='$judul',
+                        artis='$artis',
+                        thumbnail='$thumbnail',
+                        shown_at=NOW()
+                    WHERE id=$historyId"
+                );
 
-    if (!$insert) {
-        response(false, mysqli_error($conn));
-    }
+                if (!$update) {
+                    throw new Exception(mysqli_error($conn));
+                }
 
-    response(true, "History berhasil disimpan.", []).
-}i soal disimpan.", [
-            "id" => mysqli_insert_id($conn)
-        ]);
+                mysqli_commit($conn);
+
+                response(true, "History berhasil diperbarui.", [
+                    "id" => $historyId
+                ]);
+            }
+
+
+            $insert = mysqli_query(
+                $conn,
+                "INSERT INTO song_history
+                (
+                    player_id,
+                    youtube_id,
+                    judul,
+                    artis,
+                    thumbnail,
+                    shown_at
+                )
+                VALUES
+                (
+                    $player_id,
+                    '$youtube_id',
+                    '$judul',
+                    '$artis',
+                    '$thumbnail',
+                    NOW()
+                )"
+            );
+
+            if (!$insert) {
+                throw new Exception(mysqli_error($conn));
+            }
+
+            mysqli_commit($conn);
+
+            response(true, "History berhasil disimpan.", [
+                "id" => mysqli_insert_id($conn)
+            ]);
+
+        } catch (Exception $e) {
+
+            mysqli_rollback($conn);
+
+            response(false, $e->getMessage());
+        }
 
         break;
+
 
     default:
 
