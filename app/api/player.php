@@ -60,7 +60,8 @@ switch ($method) {
 
         $nama = mysqli_real_escape_string(
             $conn,
-            trim($input["nama"] ?? "")
+            $nama = trim($input["nama"] ?? "");
+            $nama = ucwords(strtolower($nama));
         );
 
         if ($nama == "") {
@@ -91,7 +92,7 @@ switch ($method) {
 
         $nama = mysqli_real_escape_string(
             $conn,
-            trim($input["nama"] ?? "")
+            $nama = trim($input["nama"] ?? "");
         );
 
         if ($id <= 0 || $nama == "") {
