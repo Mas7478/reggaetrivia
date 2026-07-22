@@ -14,11 +14,22 @@ switch ($method) {
 
             $query = mysqli_query(
                 $conn,
-                "SELECT *
-                 FROM players
-                 WHERE id=$id
-                 LIMIT 1"
+                "SELECT
+                    id,
+                    nama,
+                    xp,
+                    level,
+                    correct,
+                    wrong,
+                    created_at
+                FROM players
+                WHERE id=$id
+                LIMIT 1"
             );
+
+            if (!$query) {
+                response(false, mysqli_error($conn));
+            }
 
             if (mysqli_num_rows($query) == 0) {
                 response(false, "Player tidak ditemukan.");
@@ -34,10 +45,23 @@ switch ($method) {
 
             $query = mysqli_query(
                 $conn,
-                "SELECT *
-                 FROM players
-                 ORDER BY id DESC"
+                "SELECT
+                    id,
+                    nama,
+                    xp,
+                    level,
+                    correct,
+                    wrong,
+                    created_at
+                FROM players
+                ORDER BY level DESC,
+                         xp DESC,
+                         nama ASC"
             );
+
+            if (!$query) {
+                response(false, mysqli_error($conn));
+            }
 
             $data = [];
 
@@ -67,25 +91,91 @@ switch ($method) {
             response(false, "Nama wajib diisi.");
         }
 
+        // Cek apakah player sudah ada
+        $cek = mysqli_query(
+            $conn,
+            "SELECT
+                id,
+                nama,
+                xp,
+                level,
+                correct,
+                wrong,
+                created_at
+            FROM players
+            WHERE nama='$nama'
+            LIMIT 1"
+        );
+
+        if (!$cek) {
+            response(false, mysqli_error($conn));
+        }
+
+        if (mysqli_num_rows($cek) > 0) {
+
+            response(
+                true,
+                "Player sudah ada.",
+                mysqli_fetch_assoc($cek)
+            );
+        }
+
         $insert = mysqli_query(
             $conn,
-            "INSERT INTO players(nama)
-             VALUES('$nama')"
+            "INSERT INTO players
+            (
+                nama,
+                xp,
+                level,
+                correct,
+                wrong
+            )
+            VALUES
+            (
+                '$nama',
+                0,
+                1,
+                0,
+                0
+            )"
         );
 
         if (!$insert) {
             response(false, mysqli_error($conn));
         }
 
-        response(true, "Player berhasil dibuat.", [
-            "player_id" => mysqli_insert_id($conn)
-        ]);
+        $id = mysqli_insert_id($conn);
+
+        $query = mysqli_query(
+            $conn,
+            "SELECT
+                id,
+                nama,
+                xp,
+                level,
+                correct,
+                wrong,
+                created_at
+            FROM players
+            WHERE id=$id
+            LIMIT 1"
+        );
+
+        response(
+            true,
+            "Player berhasil dibuat.",
+            mysqli_fetch_assoc($query)
+        );
 
         break;
 
     case "PUT":
 
         $input = json_decode(file_get_contents("php://input"), true);
+
+        if (!$input) {
+            response(false, "Data tidak valid.");
+        }
 
         $id = intval($input["id"] ?? 0);
 
@@ -101,8 +191,8 @@ switch ($method) {
         $update = mysqli_query(
             $conn,
             "UPDATE players
-             SET nama='$nama'
-             WHERE id=$id"
+            SET nama='$nama'
+            WHERE id=$id"
         );
 
         if (!$update) {
@@ -126,7 +216,7 @@ switch ($method) {
         $delete = mysqli_query(
             $conn,
             "DELETE FROM players
-             WHERE id=$id"
+            WHERE id=$id"
         );
 
         if (!$delete) {
