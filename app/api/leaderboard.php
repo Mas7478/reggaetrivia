@@ -8,63 +8,79 @@ switch ($method) {
 
     case "GET":
 
-        $limit = intval($_GET["limit"] ?? 100);
-
-        if ($limit <= 0) {
-            $limit = 100;
-        }
-
         $query = mysqli_query(
             $conn,
             "SELECT
-                id,
-                nama,
-                xp,
-                level,
-                correct,
-                wrong,
-                (
-                    correct + wrong
-                ) AS total_game,
-
-                CASE
-                    WHEN (correct + wrong)=0
-                    THEN 0
-                    ELSE ROUND((correct/(correct+wrong))*100,2)
-                END AS accuracy
-
-            FROM players
-
+                leaderboard.id,
+                players.nama,
+                leaderboard.skor,
+                leaderboard.total_soal,
+                leaderboard.benar,
+                leaderboard.waktu_main
+            FROM leaderboard
+            INNER JOIN players
+                ON leaderboard.player_id = players.id
             ORDER BY
-
-                level DESC,
-                xp DESC,
-                correct DESC,
-                wrong ASC,
-                nama ASC
-
-            LIMIT $limit"
+                leaderboard.skor DESC,
+                leaderboard.benar DESC,
+                leaderboard.waktu_main ASC
+            LIMIT 100"
         );
 
         if (!$query) {
             response(false, mysqli_error($conn));
         }
 
-        $ranking = 1;
         $data = [];
 
         while ($row = mysqli_fetch_assoc($query)) {
-
-            $row["rank"] = $ranking++;
-
             $data[] = $row;
         }
 
-        response(
-            true,
-            "Leaderboard berhasil diambil.",
-            $data
+        response(true, "Leaderboard berhasil diambil.", $data);
+
+        break;
+
+    case "POST":
+
+        $input = json_decode(file_get_contents("php://input"), true);
+
+        if (!is_array($input)) {
+            response(false, "Data tidak valid.");
+        }
+
+        $player_id = intval($input["player_id"] ?? 0);
+        $skor = intval($input["skor"] ?? 0);
+        $total = intval($input["total_soal"] ?? 0);
+        $benar = intval($input["benar"] ?? 0);
+
+        if ($player_id <= 0) {
+            response(false, "Player tidak ditemukan.");
+        }
+
+        $insert = mysqli_query(
+            $conn,
+            "INSERT INTO leaderboard
+            (
+                player_id,
+                skor,
+                total_soal,
+                benar
+            )
+            VALUES
+            (
+                $player_id,
+                $skor,
+                $total,
+                $benar
+            )"
         );
+
+        if (!$insert) {
+            response(false, mysqli_error($conn));
+        }
+
+        response(true, "Skor berhasil disimpan.");
 
         break;
 
