@@ -13,8 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $host = getenv('DB_HOST') ?: "db.fr-roub1.bengt.wasmernet.com";
 $port = getenv('DB_PORT') ?: "20184";
 $db   = getenv('DB_NAME') ?: "reggae_trivia";
-$user = getenv('DB_USER') ?: "YOUR_DB_USER";
-$pass = getenv('DB_PASS') ?: "YOUR_DB_PASSWORD";
+$user = getenv('DB_USERNAME') ?: "YOUR_DB_USER";
+$pass = getenv('DB_PASSWORD') ?: "YOUR_DB_PASSWORD";
 
 $conn = mysqli_connect($host, $user, $pass, $db, $port);
 
