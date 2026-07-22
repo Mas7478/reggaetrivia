@@ -123,18 +123,32 @@ switch ($method) {
             response(false, "ID tidak valid.");
         }
 
-        $delete = mysqli_query(
-            $conn,
-            "DELETE FROM players
-             WHERE id=$id"
-        );
+       // Hapus leaderboard
+mysqli_query(
+    $conn,
+    "DELETE FROM leaderboard
+    WHERE player_id=$id"
+);
 
-        if (!$delete) {
-            response(false, mysqli_error($conn));
-        }
+// Hapus history
+mysqli_query(
+    $conn,
+    "DELETE FROM song_history
+    WHERE player_id=$id"
+);
 
-        response(true, "Player berhasil dihapus.");
+// Hapus player
+$delete = mysqli_query(
+    $conn,
+    "DELETE FROM players
+    WHERE id=$id"
+);
 
+if (!$delete) {
+    response(false, mysqli_error($conn));
+}
+
+response(true, "Player berhasil dihapus.");
         break;
 
     default:
