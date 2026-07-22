@@ -69,6 +69,23 @@ $cek = mysqli_query(
 
 if (mysqli_num_rows($cek) > 0) {
 
+    $old = mysqli_fetch_assoc($cek);
+
+if ($skor > $old["skor"]) {
+
+    mysqli_query(
+        $conn,
+        "UPDATE leaderboard
+        SET
+            skor=$skor,
+            total_soal=$total,
+            benar=$benar,
+            waktu_main=NOW()
+        WHERE player_id=$player_id"
+    );
+
+}
+
 $update = mysqli_query(
     $conn,
     "UPDATE leaderboard
