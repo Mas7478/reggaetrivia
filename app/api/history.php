@@ -67,31 +67,65 @@ switch ($method) {
             response(false, "Data belum lengkap.");
         }
 
-        $insert = mysqli_query(
-            $conn,
-            "INSERT INTO song_history
-            (
-                player_id,
-                youtube_id,
-                judul,
-                artis,
-                thumbnail
-            )
-            VALUES
-            (
-                $player_id,
-                '$youtube_id',
-                '$judul',
-                '$artis',
-                '$thumbnail'
-            )"
-        );
+        $cek = mysqli_query(
+    $conn,
+    "SELECT id
+    FROM song_history
+    WHERE
+        player_id=$player_id
+    AND
+        youtube_id='$youtube_id'
+    LIMIT 1"
+);
 
-        if ($insert === false) {
-            response(false, "Database error: " . mysqli_error($conn));
-        }
+if (mysqli_num_rows($cek) > 0) {
 
-        response(true, "Histori soal disimpan.", [
+    $row = mysqli_fetch_assoc($cek);
+
+    $historyId = $row["id"];
+
+    $update = mysqli_query(
+        $conn,
+        "UPDATE song_history
+        SET
+            shown_at=NOW()
+        WHERE id=$historyId"
+    );
+
+    if (!$update) {
+        response(false, mysqli_error($conn));
+    }
+
+    response(true, "History diperbarui.");
+
+} else {
+
+    $insert = mysqli_query(
+        $conn,
+        "INSERT INTO song_history
+        (
+            player_id,
+            youtube_id,
+            judul,
+            artis,
+            thumbnail
+        )
+        VALUES
+        (
+            $player_id,
+            '$youtube_id',
+            '$judul',
+            '$artis',
+            '$thumbnail'
+        )"
+    );
+
+    if (!$insert) {
+        response(false, mysqli_error($conn));
+    }
+
+    response(true, "History berhasil disimpan.", []).
+}i soal disimpan.", [
             "id" => mysqli_insert_id($conn)
         ]);
 
