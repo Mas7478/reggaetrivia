@@ -10,11 +10,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$host = "db.fr-roub1.bengt.wasmernet.com";
-$port = "20184";
-$db   = "reggae_trivia";
-$user = "user_98eb9574";
-$pass = "pw_fl7GIlhAHHkXXhWbFE8hlSzCylKSqrAJ";
+$host = getenv('DB_HOST') ?: "db.fr-roub1.bengt.wasmernet.com";
+$port = getenv('DB_PORT') ?: "20184";
+$db   = getenv('DB_NAME') ?: "reggae_trivia";
+$user = getenv('DB_USER') ?: "YOUR_DB_USER";
+$pass = getenv('DB_PASS') ?: "YOUR_DB_PASSWORD";
 
 $conn = mysqli_connect($host, $user, $pass, $db, $port);
 
