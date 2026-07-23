@@ -1,30 +1,149 @@
-# PHP Basic Starter + Wasmer
+# 🎵 Reggae Trivia API
 
-This example shows how to run a bare-bones **PHP** script on **Wasmer Edge** using the built-in development server.
+REST API backend untuk aplikasi **Reggae Trivia**, sebuah game kuis Android berbasis Flutter yang menguji pengetahuan pemain tentang lagu-lagu reggae menggunakan **YouTube Music API** sebagai sumber data eksternal.
 
-## Demo
+Backend ini dibangun menggunakan **PHP Native**, **MySQL**, dan di-hosting menggunakan **Wasmer**.
 
-`https://<your-subdomain>.wasmer.app/` (deploy to get your own URL)
+---
 
-## How it Works
+## 🚀 Features
 
-The entrypoint `app/index.php` is intentionally simple:
+- 🎮 Generate trivia questions dari YouTube Music API
+- 👤 CRUD Player
+- 🏆 Leaderboard dengan sistem poin akumulatif
+- 📈 Skor bertambah saat jawaban benar
+- 📉 Skor berkurang saat jawaban salah
+- 🕒 Menyimpan waktu permainan
+- 🎵 Menyimpan history lagu yang pernah muncul
+- 🚫 Mencegah data leaderboard ganda
+- 🚫 Mencegah history lagu ganda
+- 🗑 Menghapus leaderboard & history ketika player dihapus
+- 🌍 REST API JSON
 
-* Builds an associative array containing a greeting, a few numbers, and `phpversion()`.
-* Iterates over the array, printing each key/value pair with tab separators.
+---
 
-Swap this logic for your own endpoints or templates—Wasmer simply executes the PHP script for each request.
+## 🛠 Tech Stack
 
-## Running Locally
+- PHP Native
+- MySQL
+- REST API
+- Wasmer
+- Flutter (Client)
+- YouTube Music API
 
-```bash
-php -t app -S 127.0.0.1:8080
+---
+
+## 📂 Project Structure
+
+```
+api/
+│── config.php
+│── game.php
+│── history.php
+│── leaderboard.php
+│── player.php
+
+index.php
+README.md
 ```
 
-Visit `http://127.0.0.1:8080/` to see the sample output. Edit `app/index.php` and reload the page to test changes.
+---
 
-## Deploying to Wasmer (Overview)
+## 📡 API Endpoints
 
-1. Package the `app/` directory (and any additional PHP files) with your deployment.
-2. Configure the start command to serve the directory, e.g. `php -t app -S 0.0.0.0:$PORT`.
-3. Deploy to Wasmer Edge and open `https://<your-subdomain>.wasmer.app/`.
+### Game
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/game.php?keyword=reggae` | Generate trivia question |
+
+---
+
+### Player
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/player.php` | Get all players |
+| GET | `/api/player.php?id=1` | Get player by ID |
+| POST | `/api/player.php` | Create player |
+| PUT | `/api/player.php` | Update player |
+| DELETE | `/api/player.php?id=1` | Delete player |
+
+---
+
+### Leaderboard
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/leaderboard.php` | Get leaderboard |
+| POST | `/api/leaderboard.php` | Save player score |
+
+---
+
+### Song History
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/history.php?player_id=1` | Get song history |
+| POST | `/api/history.php` | Save song history |
+
+---
+
+## 🗄 Database
+
+### players
+
+```
+id
+nama
+```
+
+### leaderboard
+
+```
+id
+player_id
+skor
+total_soal
+benar
+waktu_main
+```
+
+### song_history
+
+```
+id
+player_id
+youtube_id
+judul
+artis
+thumbnail
+shown_at
+```
+
+---
+
+## 🎮 Game Rules
+
+- Benar : +10 poin
+- Salah : -5 poin
+- Skor minimum : 0 poin
+- Leaderboard menggunakan sistem poin akumulatif.
+- Setiap player hanya memiliki satu data leaderboard.
+- History lagu tidak akan tersimpan dua kali.
+
+---
+
+## 🌐 External API
+
+Project ini menggunakan:
+
+**YouTube Music API**
+
+https://github.com/2004durgesh/yt-music-api
+
+---
+
+## 📄 License
+
+This project is for educational purposes.
