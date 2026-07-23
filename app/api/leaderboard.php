@@ -98,33 +98,27 @@ switch ($method) {
             if (mysqli_num_rows($cek) > 0) {
 
                 $row = mysqli_fetch_assoc($cek);
-
+            
                 $leaderboardId = intval($row["id"]);
-                $bestScore = intval($row["skor"]);
-
- 
-                if ($skor > $bestScore) {
-
-                    $update = mysqli_query(
-                        $conn,
-                        "UPDATE leaderboard
-                        SET
-                            skor=$skor,
-                            total_soal=$total,
-                            benar=$benar,
-                            waktu_main=NOW()
-                        WHERE id=$leaderboardId"
-                    );
-
-                    if (!$update) {
-                        throw new Exception(mysqli_error($conn));
-                    }
+            
+                $update = mysqli_query(
+                    $conn,
+                    "UPDATE leaderboard
+                    SET
+                        skor = GREATEST(0, skor + $skor),
+                        total_soal = total_soal + $total,
+                        benar = benar + $benar,
+                        waktu_main = NOW()
+                    WHERE id = $leaderboardId"
+                );
+            
+                if (!$update) {
+                    throw new Exception(mysqli_error($conn));
                 }
-
+            
                 mysqli_commit($conn);
-
+            
                 response(true, "Leaderboard berhasil diperbarui.");
-
             }
 
     
