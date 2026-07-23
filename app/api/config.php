@@ -18,6 +18,8 @@ $pass = getenv('DB_PASSWORD') ?: "YOUR_DB_PASSWORD";
 
 $conn = mysqli_connect($host, $user, $pass, $db, $port);
 
+mysqli_query($conn, "SET time_zone = '+07:00'");
+
 if (!$conn) {
     http_response_code(500);
 
