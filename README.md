@@ -127,7 +127,7 @@ shown_at
 ## 🎮 Game Rules
 
 - Benar : +10 poin
-- Salah : -5 poin
+- Salah : -10 poin
 - Skor minimum : 0 poin
 - Leaderboard menggunakan sistem poin akumulatif.
 - Setiap player hanya memiliki satu data leaderboard.
