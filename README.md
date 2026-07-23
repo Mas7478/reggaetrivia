@@ -36,15 +36,16 @@ Backend ini dibangun menggunakan **PHP Native**, **MySQL**, dan di-hosting mengg
 ## 📂 Project Structure
 
 ```
-api/
-│── config.php
-│── game.php
-│── history.php
-│── leaderboard.php
-│── player.php
-
-index.php
-README.md
+reggaetrivia/
+│
+├── api/
+│   ├── config.php
+│   ├── game.php
+│   ├── history.php
+│   ├── leaderboard.php
+│   └── player.php
+│
+└── index.php
 ```
 
 ---
