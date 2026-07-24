@@ -18,6 +18,7 @@ curl_setopt_array($ch, [
     CURLOPT_TIMEOUT => 15,
     CURLOPT_CONNECTTIMEOUT => 10,
     CURLOPT_SSL_VERIFYPEER => true,
+    CURLOPT_CAINFO => __DIR__ . "/cacert.pem",
     CURLOPT_HTTPHEADER => [
         "Accept: application/json",
         "User-Agent: Mozilla/5.0 (compatible; ReggaeTriviaBackend/1.0)"
