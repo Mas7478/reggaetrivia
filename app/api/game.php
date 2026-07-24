@@ -10,16 +10,33 @@ $keyword = isset($_GET["keyword"]) && trim($_GET["keyword"]) != ""
 
 $url = "https://m-yt-music-api.vercel.app/search/musics?query=" . urlencode($keyword);
 
-$context = stream_context_create([
-    "http" => [
-        "timeout" => 10
+$ch = curl_init($url);
+
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_TIMEOUT => 15,
+    CURLOPT_CONNECTTIMEOUT => 10,
+    CURLOPT_SSL_VERIFYPEER => true,
+    CURLOPT_HTTPHEADER => [
+        "Accept: application/json",
+        "User-Agent: Mozilla/5.0 (compatible; ReggaeTriviaBackend/1.0)"
     ]
 ]);
 
-$response = @file_get_contents($url, false, $context);
+$response = curl_exec($ch);
+$curlErrno = curl_errno($ch);
+$curlError = curl_error($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-if ($response === false) {
-    response(false, "Gagal mengambil data dari YouTube Music API.");
+curl_close($ch);
+
+if ($response === false || $curlErrno !== 0) {
+    response(false, "Gagal mengambil data dari YouTube Music API. (" . $curlError . ")");
+}
+
+if ($httpCode < 200 || $httpCode >= 300) {
+    response(false, "YouTube Music API mengembalikan status " . $httpCode . ".");
 }
 
 
